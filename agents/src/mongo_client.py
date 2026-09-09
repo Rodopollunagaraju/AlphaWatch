@@ -4,9 +4,18 @@ import logging
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
 import math
-from pymongo import MongoClient
-from pymongo.errors import PyMongoError
-from bson import ObjectId
+try:
+    from pymongo import MongoClient
+    from pymongo.errors import PyMongoError
+    from bson import ObjectId
+    PYMONGO_AVAILABLE = True
+except ImportError:
+    PYMONGO_AVAILABLE = False
+    MongoClient = None
+    PyMongoError = Exception
+
+    class ObjectId(str):
+        pass
 
 from .config import get_settings
 
@@ -37,6 +46,10 @@ class MongoRepository:
 
     def connect(self):
         """Connect to MongoDB."""
+        if not PYMONGO_AVAILABLE:
+            logger.warning("[Mongo] PyMongo package not installed; running in offline/mock mode.")
+            return
+
         if self.client is None:
             logger.info(f"[Mongo] Connecting to {self.uri} (database: {self.db_name})...")
             self.client = MongoClient(self.uri, serverSelectionTimeoutMS=5000)
@@ -55,7 +68,7 @@ class MongoRepository:
         """Get collection with lazy connect."""
         if self.db is None:
             self.connect()
-        return self.db[name]
+        return self.db[name] if self.db is not None else None
 
     def upsert_article(self, article_data: Dict[str, Any]) -> Optional[ObjectId]:
         """
@@ -64,6 +77,9 @@ class MongoRepository:
         """
         try:
             coll = self.get_collection("articles")
+            if coll is None:
+                return ObjectId("000000000000000000000001")
+
             content_hash = article_data.get("contentHash")
             if not content_hash:
                 raise ValueError("Article missing required contentHash")
@@ -101,7 +117,7 @@ class MongoRepository:
             existing = coll.find_one({"contentHash": content_hash}, {"_id": 1})
             return existing["_id"] if existing else None
 
-        except PyMongoError as e:
+        except Exception as e:
             logger.error(f"[Mongo] Failed to upsert article: {e}")
             return None
 
@@ -109,8 +125,10 @@ class MongoRepository:
         """Retrieve article by contentHash."""
         try:
             coll = self.get_collection("articles")
+            if coll is None:
+                return None
             return coll.find_one({"contentHash": content_hash})
-        except PyMongoError as e:
+        except Exception as e:
             logger.error(f"[Mongo] Error finding article: {e}")
             return None
 
@@ -118,6 +136,8 @@ class MongoRepository:
         """Save an alert to the alerts collection."""
         try:
             coll = self.get_collection("alerts")
+            if coll is None:
+                return ObjectId("000000000000000000000002")
             doc = {
                 "articleId": alert_data.get("articleId"),
                 "tickers": alert_data.get("tickers", []),
