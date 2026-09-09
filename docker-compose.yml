@@ -117,29 +117,29 @@ services:
       - alphawatch-net
 
   # ── Agent Worker (Day 2) ────────────────────────────────
-  # agent-worker:
-  #   build:
-  #     context: ./agents
-  #     dockerfile: Dockerfile
-  #   container_name: alphawatch-agents
-  #   depends_on:
-  #     kafka:
-  #       condition: service_healthy
-  #     mongodb:
-  #       condition: service_healthy
-  #   environment:
-  #     - GEMINI_API_KEY=${GEMINI_API_KEY}
-  #     - MONGODB_URI=mongodb://mongodb:27017/alphawatch
-  #     - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-  #     - EXTRACTION_MODEL=${EXTRACTION_MODEL:-gemini-2.0-flash}
-  #     - REASONING_MODEL=${REASONING_MODEL:-gemini-2.5-flash}
-  #     - EMBEDDING_MODEL=${EMBEDDING_MODEL:-text-embedding-004}
-  #     - REDIS_URL=redis://redis:6379
-  #     - ALERT_SIGNIFICANCE_THRESHOLD=${ALERT_SIGNIFICANCE_THRESHOLD:-0.6}
-  #     - RELEVANCE_GATE_THRESHOLD=${RELEVANCE_GATE_THRESHOLD:-0.3}
-  #   restart: unless-stopped
-  #   networks:
-  #     - alphawatch-net
+  agent-worker:
+    build:
+      context: ./agents
+      dockerfile: Dockerfile
+    container_name: alphawatch-agents
+    depends_on:
+      kafka:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - MONGODB_URI=mongodb://mongodb:27017/alphawatch
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - EXTRACTION_MODEL=${EXTRACTION_MODEL:-gemini-2.0-flash}
+      - REASONING_MODEL=${REASONING_MODEL:-gemini-2.5-flash}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-text-embedding-004}
+      - REDIS_URL=redis://redis:6379
+      - ALERT_SIGNIFICANCE_THRESHOLD=${ALERT_SIGNIFICANCE_THRESHOLD:-0.6}
+      - RELEVANCE_GATE_THRESHOLD=${RELEVANCE_GATE_THRESHOLD:-0.3}
+    restart: unless-stopped
+    networks:
+      - alphawatch-net
 
   # ── Frontend (Day 3) ────────────────────────────────────
   # frontend:

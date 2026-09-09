@@ -4,7 +4,11 @@ import json
 import logging
 from typing import Dict, Any, Optional
 from datetime import datetime
-from bson import ObjectId
+try:
+    from bson import ObjectId
+except ImportError:
+    class ObjectId(str):
+        pass
 
 try:
     from kafka import KafkaProducer

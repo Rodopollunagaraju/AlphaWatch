@@ -189,11 +189,11 @@ class ExtractionAgent:
             category = "macro"
 
         # 4. Relevance calculation
-        relevance_score = 0.5
+        relevance_score = 0.15
         if found_tickers:
-            relevance_score += 0.3
+            relevance_score += 0.45
         if category in ("earnings", "mergers", "regulatory", "macro"):
-            relevance_score += 0.2
+            relevance_score += 0.35
         relevance_score = min(1.0, relevance_score)
 
         summary = (title.strip() + ". " + content.strip()[:200]).strip()

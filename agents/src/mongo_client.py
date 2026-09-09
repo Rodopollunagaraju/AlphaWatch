@@ -172,6 +172,8 @@ class MongoRepository:
         """
         try:
             coll = self.get_collection("articles")
+            if coll is None:
+                return []
             query: Dict[str, Any] = {}
             if exclude_id:
                 query["_id"] = {"$ne": exclude_id}
